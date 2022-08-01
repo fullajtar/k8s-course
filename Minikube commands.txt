@@ -1,0 +1,71 @@
+minikube start --driver=virtualbox --no-vtx-check
+
+kubectl get nodes
+kubectl get pods (only in default namespace)
+kubectl get namespaces
+kubectl get pods --namespace=kube-system
+kubectl run nginx --image=nginx
+kubectl describe pod nginx
+
+minikube ip
+ssh docker@192.168.59.102
+in ssh session:
+	docker ps | grep nginx
+	docker exec -it 2ebe52d0c8dc sh
+	in sh session (inside container):
+		hostname
+		hostname -i (get ip)
+
+kubectl get pods -o wide
+kubectl delete pod nginx
+kubectl create deployment nginx-deployment --image=nginx
+kubectl get deployments
+kubectl describe deployment nginx-deployment
+k describe pod nginx-deployment-85c6d5f6dd-5gpp4
+
+SCALING:
+k scale deployment nginx-deployment --replicas=5
+
+SERVICES:
+$ k expose deployment nginx-deployment --port=8080 --target-port=80
+k get services / k get svc
+$ k describe service nginx-deployment
+
+DOCKER:
+docker build . -t xfullajtar/k8s-web-hello
+docker login
+docker push xfullajtar/k8s-web-hello
+
+docker build . -t xfullajtar/k8s-web-hello:2.0.0
+
+k create deployment k8s-web-hello --image=xfullajta/k8s-web-hello
+$ k expose deployment k8s-web-hello --port=3000
+$ k expose deployment k8s-web-hello --type=NodePort --port=3000
+$ minikube service k8s-web-hello
+
+LOADBALANCER:
+$ k expose deployment k8s-web-hello --type=LoadBalancer --port=3000
+
+UPDATE PODS:
+k set image deployment k8s-web-hello k8s-web-hello=xfullajtar/k8s-web-hello:2.0.0
+k rollout status deploy k8s-web-hello
+
+minikube dashboard
+
+DELETE ALL RESOURCES:
+k delete all --all
+
+DECLARATIVE APPROACH:
+kubernetes.io -> docs -> kubernetesAPI -> workload resources -> deployment (deployment yaml file) pod template spec
+
+kubectl apply -f deployment.yaml / service.yaml
+k delete -f deployment.yaml / service.yaml
+k apply -f k8s-web-to-nginx.yaml -f nginx.yaml
+
+RESOLVE NGINX NAME FROM INSIDE OF CONTAINER OF THIS POD:
+$ k exec k8s-web-to-nginx-98d55dcc6-2km8k -- nslookup nginx
+
+CONNECT TO NGINX AND RETRIEVE PAGE:
+$ k exec k8s-web-to-nginx-98d55dcc6-2km8k -- wget -q0- https://nginx
+
+$ minikube start --driver=virtualbox --no-vtx-check --container-runtime=cri-o
